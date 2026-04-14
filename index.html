@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Лаб. работа: линейная сложная схема | Скрипин В.А. | ГАПОУ РК ПАТТ 2026</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(145deg, #e0e7f0 0%, #d0d9e8 100%);
+            margin: 0;
+            padding: 20px 16px;
+            color: #1a2c3e;
+        }
+        .lab-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(0px);
+            border-radius: 48px;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.6);
+            overflow: hidden;
+            padding: 24px 22px;
+            transition: all 0.2s;
+        }
+        @media (max-width: 650px) {
+            body { padding: 12px 8px; }
+            .lab-container { padding: 18px 14px; border-radius: 32px; }
+        }
+        h1 {
+            font-size: 1.85rem;
+            text-align: center;
+            background: linear-gradient(135deg, #0b2b44, #1b4f72, #2c7da0);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-top: 0;
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+        .sub {
+            text-align: center;
+            font-weight: 500;
+            color: #2c5a74;
+            margin-bottom: 20px;
+            border-bottom: 2px dashed #bdd4e7;
+            display: inline-block;
+            width: auto;
+            margin-left: auto;
+            margin-right: auto;
+            padding-bottom: 8px;
+        }
+        h2 {
+            border-left: 6px solid #1f6392;
+            padding-left: 18px;
+            color: #164863;
+            margin: 28px 0 18px 0;
+            font-weight: 650;
+            font-size: 1.45rem;
+        }
+        h3 {
+            font-size: 1.2rem;
+            margin: 12px 0 10px;
+            color: #1f4e6e;
+            font-weight: 600;
+        }
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            justify-content: center;
+        }
+        .controls-panel {
+            background: #f9fbfe;
+            border-radius: 36px;
+            padding: 20px 22px;
+            border: 1px solid #e2edf7;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.05);
+            flex: 1.1;
+            min-width: 250px;
+        }
+        .scheme-panel {
+            background: #ffffff;
+            border-radius: 36px;
+            padding: 18px 14px;
+            border: 1px solid #dee9f2;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.05);
+            flex: 1.5;
+            min-width: 290px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .param-slider {
+            margin-bottom: 24px;
+        }
+        .param-slider label {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1b4d6e;
+            font-size: 1rem;
+        }
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            background: #cfe0ef;
+            height: 6px;
+            border-radius: 10px;
+            -webkit-appearance: none;
+        }
+        input[type="range"]:focus { outline: none; }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #2c7da0;
+            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            border: 2px solid white;
+        }
+        .param-value {
+            font-family: 'JetBrains Mono', monospace;
+            background: #e9f0f5;
+            padding: 4px 14px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #0e4b6e;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin: 20px 0;
+            background: #eef3fc;
+            padding: 18px;
+            border-radius: 40px;
+        }
+        .result-card {
+            background: white;
+            border-radius: 28px;
+            padding: 12px 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            text-align: center;
+            transition: all 0.1s ease;
+            border: 1px solid #d4e2f0;
+        }
+        .result-card span:first-child {
+            font-weight: 700;
+            color: #1b5e7a;
+            font-size: 0.85rem;
+            letter-spacing: 0.3px;
+        }
+        .result-card .big-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin: 8px 0 2px;
+            font-family: monospace;
+            color: #0f3b4f;
+        }
+        svg {
+            max-width: 100%;
+            height: auto;
+            border-radius: 28px;
+            background: #fefef9;
+            padding: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+        .table-wrap {
+            overflow-x: auto;
+            margin: 18px 0;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 28px;
+            background: #ffffff;
+            padding: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 24px;
+            min-width: 560px;
+        }
+        th, td {
+            border: 1px solid #cddfed;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+        th {
+            background: #e6f0f9;
+            color: #1f5a7a;
+            font-weight: 700;
+        }
+        button {
+            background: #2c7da0;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 12px;
+            width: 100%;
+            max-width: 280px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        button:active {
+            transform: scale(0.96);
+            background: #1b5a78;
+        }
+        .step-card {
+            background: #fff8ed;
+            border-radius: 32px;
+            padding: 18px 22px;
+            margin: 24px 0;
+            border-left: 8px solid #f4b942;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.03);
+        }
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #c46b0c;
+            margin-bottom: 12px;
+        }
+        .step-content {
+            padding-left: 24px;
+            line-height: 1.5;
+            color: #2c3e44;
+        }
+        .badge {
+            background: #f0a500;
+            color: white;
+            border-radius: 40px;
+            padding: 4px 14px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-right: 12px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.75rem;
+            border-top: 2px solid #dce7f0;
+            padding-top: 22px;
+            color: #4a627a;
+        }
+        .developer {
+            background: #eef3e6;
+            border-radius: 60px;
+            padding: 10px 24px;
+            display: inline-block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2b5e3b;
+            margin-top: 10px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(6px);
+        }
+        .modal-content {
+            background-color: #fffef9;
+            margin: 8% auto;
+            padding: 24px 22px;
+            border-radius: 48px;
+            width: 92%;
+            max-width: 640px;
+            box-shadow: 0 30px 45px rgba(0,0,0,0.2);
+            border: 1px solid #ffe3b3;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ffe0b5;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .modal-header h2 {
+            margin: 0;
+            border-left: none;
+            padding-left: 0;
+        }
+        .close-modal {
+            font-size: 34px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #a05e15;
+            padding: 0 8px;
+        }
+        .task-item {
+            background: #fefaf2;
+            border-radius: 32px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border: 1px solid #fae5bc;
+        }
+        .task-item label {
+            font-weight: 800;
+            display: block;
+            margin-bottom: 10px;
+            color: #a55707;
+        }
+        .task-item input, .task-item textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 40px;
+            border: 1px solid #d9c8ae;
+            font-family: inherit;
+            font-size: 0.95rem;
+            margin-top: 6px;
+            background: white;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 14px;
+            font-weight: normal;
+        }
+        .modal-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 14px;
+            margin-top: 24px;
+        }
+        .btn-secondary { background: #6c757d; }
+        .btn-success { background: #2b7a3e; }
+        .group-badge {
+            background: #ffe0a3;
+            padding: 5px 16px;
+            border-radius: 60px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 10px;
+            color: #814f0a;
+        }
+        @media (max-width: 550px) {
+            .results-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .result-card .big-value { font-size: 1.2rem; }
+            .step-content { padding-left: 8px; }
+        }
+    </style>
+</head>
+<body>
+<div class="lab-container">
+    <h1>⚡ Лабораторная работа №2<br>Исследование линейной сложной схемы постоянного тока</h1>
+    <div style="text-align:center; margin-top:-6px;"><span class="sub">🔧 Цепь с двумя источниками ЭДС — метод узловых потенциалов</span></div>
+
+    <div class="flex-row">
+        <div class="controls-panel">
+            <h3 style="margin-top:0;">🎛️ Управление параметрами</h3>
+            <div class="param-slider">
+                <label>🔋 E₁ <span id="E1_disp" class="param-value">15.0 В</span></label>
+                <input type="range" id="E1_slider" min="0" max="30" step="0.5" value="15">
+            </div>
+            <div class="param-slider">
+                <label>🔋 E₂ <span id="E2_disp" class="param-value">10.0 В</span></label>
+                <input type="range" id="E2_slider" min="0" max="30" step="0.5" value="10">
+            </div>
+            <div class="param-slider">
+                <label>📏 R₁ <span id="R1_disp" class="param-value">100 Ом</span></label>
+                <input type="range" id="R1_slider" min="10" max="400" step="5" value="100">
+            </div>
+            <div class="param-slider">
+                <label>📏 R₂ <span id="R2_disp" class="param-value">150 Ом</span></label>
+                <input type="range" id="R2_slider" min="10" max="400" step="5" value="150">
+            </div>
+            <div class="param-slider">
+                <label>📏 R₃ <span id="R3_disp" class="param-value">200 Ом</span></label>
+                <input type="range" id="R3_slider" min="10" max="400" step="5" value="200">
+            </div>
+            <button id="resetBtn">⟳ Сброс к стандартным параметрам</button>
+            <button id="openTasksBtn" style="background:#b6560c; margin-top: 14px;">📋 Открыть задания для группы 2СП1</button>
+        </div>
+        <div class="scheme-panel">
+            <h3 style="margin:0 0 12px 0;">📐 Принципиальная схема</h3>
+            <svg viewBox="0 0 460 280" xmlns="http://www.w3.org/2000/svg" style="width:100%; background:#FEFDF7; border-radius: 28px;">
+                <rect x="8" y="8" width="444" height="264" fill="#FEFDF7" rx="24" stroke="#cddae9" stroke-width="1.2"/>
+                <circle cx="90" cy="80" r="5" fill="#2c5282" stroke="#fff" stroke-width="2"/>
+                <circle cx="90" cy="200" r="5" fill="#2c5282" stroke="#fff" stroke-width="2"/>
+                <circle cx="370" cy="80" r="5" fill="#2c5282" stroke="#fff" stroke-width="2"/>
+                <circle cx="370" cy="200" r="5" fill="#2c5282" stroke="#fff" stroke-width="2"/>
+                <line x1="90" y1="80" x2="90" y2="200" stroke="#1f6392" stroke-width="2.5"/>
+                <text x="60" y="135" font-size="13" fill="#c0392b" font-weight="bold">E₁</text>
+                <rect x="78" y="110" width="24" height="26" fill="#FFE0B5" stroke="#b45f2b" stroke-width="1.5" rx="4"/>
+                <text x="81" y="127" font-size="10" fill="#a0522d">R₁</text>
+                <line x1="90" y1="80" x2="370" y2="80" stroke="#1f6392" stroke-width="2.5"/>
+                <rect x="190" y="63" width="70" height="34" fill="#FFE0B5" stroke="#b45f2b" stroke-width="1.5" rx="6"/>
+                <text x="210" y="85" font-size="12" fill="#a0522d">R₂</text>
+                <line x1="370" y1="80" x2="370" y2="200" stroke="#1f6392" stroke-width="2.5"/>
+                <text x="385" y="135" font-size="13" fill="#c0392b" font-weight="bold">E₂</text>
+                <rect x="358" y="155" width="24" height="26" fill="#FFE0B5" stroke="#b45f2b" stroke-width="1.5" rx="4"/>
+                <text x="361" y="172" font-size="10" fill="#a0522d">R₃</text>
+                <line x1="90" y1="200" x2="370" y2="200" stroke="#1f6392" stroke-width="2.5"/>
+                <text x="48" y="170" font-size="13" fill="#1e6f5c" font-weight="bold">I₁</text>
+                <text x="270" y="58" font-size="13" fill="#1e6f5c" font-weight="bold">I₂</text>
+                <text x="395" y="190" font-size="13" fill="#1e6f5c" font-weight="bold">I₃</text>
+                <polygon points="80,175 90,185 100,175" fill="#1e6f5c" opacity="0.7"/>
+                <polygon points="270,50 280,58 270,66" fill="#1e6f5c" opacity="0.7"/>
+                <polygon points="375,190 385,200 395,190" fill="#1e6f5c" opacity="0.7"/>
+                <text x="210" y="210" font-size="11" fill="#2c5282">Узел A (верхний)</text>
+            </svg>
+            <p style="font-size:0.7rem; margin: 8px 0 0;">🔵 Направления токов: I₁ (через E₁,R₁), I₂ (через R₂), I₃ (через E₂,R₃)</p>
+        </div>
+    </div>
+
+    <h2>📊 Результаты моделирования (законы Кирхгофа)</h2>
+    <div class="results-grid">
+        <div class="result-card"><span>Ток I₁ (ветвь E₁,R₁)</span><div class="big-value" id="I1_val">--- мА</div><span>направлен вниз</span></div>
+        <div class="result-card"><span>Ток I₂ (R₂)</span><div class="big-value" id="I2_val">--- мА</div><span>→ слева направо</span></div>
+        <div class="result-card"><span>Ток I₃ (ветвь E₂,R₃)</span><div class="big-value" id="I3_val">--- мА</div><span>направлен вниз</span></div>
+        <div class="result-card"><span>U<sub>AB</sub> (между узлами)</span><div class="big-value" id="Uab_val">--- В</div><span>напряжение верх-низ</span></div>
+    </div>
+
+    <h2>📝 Экспериментальные данные (запишите в тетрадь)</h2>
+    <div class="table-wrap">
+        <table id="dataTable">
+            <thead><tr><th>E₁, В</th><th>E₂, В</th><th>R₁, Ом</th><th>R₂, Ом</th><th>R₃, Ом</th><th>I₁, мА</th><th>I₂, мА</th><th>I₃, мА</th></tr></thead>
+            <tbody id="tableBody"><tr><td colspan="8" style="text-align:center;">— настройте параметры —</td></tr></tbody>
+        </table>
+    </div>
+
+    <h2>🧪 Экспериментальные исследования (выполните шаги)</h2>
+    <div class="step-card">
+        <div class="step-header">📌 ШАГ 1. Влияние ЭДС E₁ на токи ветвей</div>
+        <div class="step-content">
+            <p><span class="badge">Сделайте</span> R₁=100 Ом, R₂=150 Ом, R₃=200 Ом, E₂=10 В. Плавно меняйте E₁ от 5 до 25 В (шаг 5 В).</p>
+            <p><span class="badge">Запишите</span> в тетрадь таблицу: E₁ → I₁, I₂, I₃. Постройте график I₁(E₁). Объясните, почему I₂ растёт.</p>
+        </div>
+    </div>
+    <div class="step-card">
+        <div class="step-header">🔄 ШАГ 2. Зависимость токов от сопротивления R₂</div>
+        <div class="step-content">
+            <p><span class="badge">Установите</span> E₁=15 В, E₂=10 В, R₁=120 Ом, R₃=180 Ом. Меняйте R₂ от 50 до 300 Ом.</p>
+            <p><span class="badge">Проанализируйте</span> как изменяется I₂ (ток через R₂) и I₁, I₃. Сделайте вывод о перераспределении токов.</p>
+        </div>
+    </div>
+    <div class="step-card">
+        <div class="step-header">⚖️ ШАГ 3. Режим компенсации (I₂ = 0)</div>
+        <div class="step-content">
+            <p><span class="badge">Подберите</span> параметры (изменяя E₁, E₂ или R₁, R₂, R₃) так, чтобы ток I₂ стал равен нулю (или близок к 0).</p>
+            <p><span class="badge">Проверьте</span> условие равновесия: E₁/R₁ = E₂/R₃ (при I₂=0). Запишите подобранные значения.</p>
+        </div>
+    </div>
+    <div class="step-card">
+        <div class="step-header">📐 ШАГ 4. Проверка законов Кирхгофа</div>
+        <div class="step-content">
+            <p>Для любого произвольного режима (например, после сброса) вычислите:</p>
+            <p>▪ <strong>1-й закон Кирхгофа</strong> для верхнего узла: I₁ = I₂ + I₃ (в мА). Рассчитайте невязку Δ = I₁ − (I₂+I₃).</p>
+            <p>▪ <strong>2-й закон Кирхгофа</strong> для контура E₁–R₁–R₃–E₂: E₁ − E₂ = I₁·R₁ + I₃·R₃. Проверьте численно.</p>
+            <p>Запишите результаты в отчёт.</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        🧪 ГАПОУ РК «Петрозаводский автотранспортный техникум» (ПАТТ)<br>
+        <div class="developer">👨‍🏫 <strong>Разработчик и преподаватель: Скрипин В.А.</strong> | 2026 г.</div>
+        <div style="margin-top: 8px;">📱 Интерактивная лабораторная — исследуйте сложные линейные цепи, меняйте параметры в реальном времени</div>
+    </div>
+</div>
+
+<!-- Модальное окно заданий для группы 2СП1 -->
+<div id="tasksModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>📋 Индивидуальные задания (группа 2СП1) <span class="group-badge">2СП1</span></h2>
+            <span class="close-modal">&times;</span>
+        </div>
+        <p style="margin-bottom: 12px;">✅ Заполните поля после выполнения шагов 1–4. Сохраните ответы — они останутся в телефоне.</p>
+        <div class="task-item">
+            <label>🔹 Задание 1 (E₁=20 В, остальные по умолчанию)</label>
+            <input type="text" id="task1_I1" placeholder="I₁ (мА) =">
+            <input type="text" id="task1_I2" placeholder="I₂ (мА) =" style="margin-top:8px">
+            <input type="text" id="task1_I3" placeholder="I₃ (мА) =" style="margin-top:8px">
+            <label class="checkbox-label"><input type="checkbox" id="task1_done"> ✔️ Данные зафиксированы</label>
+        </div>
+        <div class="task-item">
+            <label>🔸 Задание 2 (R₂=250 Ом, остальные стандартные)</label>
+            <input type="text" id="task2_I1" placeholder="I₁ (мА) =">
+            <input type="text" id="task2_I2" placeholder="I₂ (мА) =">
+            <input type="text" id="task2_I3" placeholder="I₃ (мА) =" style="margin-top:8px">
+            <label class="checkbox-label"><input type="checkbox" id="task2_done"> ✔️ Выполнено</label>
+        </div>
+        <div class="task-item">
+            <label>⚖️ Задание 3 (режим I₂=0) — подобранные параметры</label>
+            <input type="text" id="task3_E1" placeholder="E₁ (В) =">
+            <input type="text" id="task3_E2" placeholder="E₂ (В) =">
+            <input type="text" id="task3_R1" placeholder="R₁ (Ом) =">
+            <input type="text" id="task3_R2" placeholder="R₂ (Ом) =">
+            <input type="text" id="task3_R3" placeholder="R₃ (Ом) =">
+            <label class="checkbox-label"><input type="checkbox" id="task3_done"> ✔️ Условие выполнено</label>
+        </div>
+        <div class="task-item">
+            <label>📐 Задание 4 (проверка законов Кирхгофа)</label>
+            <input type="text" id="task4_kcl" placeholder="I₁ - (I₂+I₃) = (мА)">
+            <input type="text" id="task4_kvl" placeholder="E₁−E₂ − (I₁R₁+I₃R₃) = (В)">
+            <label class="checkbox-label"><input type="checkbox" id="task4_done"> ✔️ Законы проверены</label>
+        </div>
+        <div class="modal-buttons">
+            <button id="saveAnswersBtn" class="btn-success">💾 Сохранить ответы</button>
+            <button id="copyAnswersBtn" class="btn-secondary">📋 Копировать для отчёта</button>
+            <button id="closeModalBtn" class="btn-secondary">Закрыть</button>
+        </div>
+        <p style="font-size:0.7rem; text-align:center; margin-top: 16px;">✏️ Ответы сохраняются в localStorage телефона. Скопированный текст можно вставить в тетрадь или документ.</p>
+    </div>
+</div>
+
+<script>
+    const E1_slider = document.getElementById('E1_slider');
+    const E2_slider = document.getElementById('E2_slider');
+    const R1_slider = document.getElementById('R1_slider');
+    const R2_slider = document.getElementById('R2_slider');
+    const R3_slider = document.getElementById('R3_slider');
+    const E1_disp = document.getElementById('E1_disp');
+    const E2_disp = document.getElementById('E2_disp');
+    const R1_disp = document.getElementById('R1_disp');
+    const R2_disp = document.getElementById('R2_disp');
+    const R3_disp = document.getElementById('R3_disp');
+    const I1_val = document.getElementById('I1_val');
+    const I2_val = document.getElementById('I2_val');
+    const I3_val = document.getElementById('I3_val');
+    const Uab_val = document.getElementById('Uab_val');
+    const resetBtn = document.getElementById('resetBtn');
+
+    function calculateAll() {
+        let E1 = parseFloat(E1_slider.value);
+        let E2 = parseFloat(E2_slider.value);
+        let R1 = parseFloat(R1_slider.value);
+        let R2 = parseFloat(R2_slider.value);
+        let R3 = parseFloat(R3_slider.value);
+        
+        let G1 = 1/R1, G2 = 1/R2, G3 = 1/R3;
+        let Ua = (E1*G1 + E2*G3) / (G1 + G2 + G3);
+        
+        let I1 = (E1 - Ua) / R1;
+        let I2 = Ua / R2;
+        let I3 = (E2 - Ua) / R3;
+        let Uab = Ua;
+        
+        I1_val.innerText = (I1 * 1000).toFixed(1) + ' мА';
+        I2_val.innerText = (I2 * 1000).toFixed(1) + ' мА';
+        I3_val.innerText = (I3 * 1000).toFixed(1) + ' мА';
+        Uab_val.innerText = Uab.toFixed(2) + ' В';
+        
+        E1_disp.innerText = E1.toFixed(1) + ' В';
+        E2_disp.innerText = E2.toFixed(1) + ' В';
+        R1_disp.innerText = R1.toFixed(0) + ' Ом';
+        R2_disp.innerText = R2.toFixed(0) + ' Ом';
+        R3_disp.innerText = R3.toFixed(0) + ' Ом';
+        
+        document.getElementById('tableBody').innerHTML = `<tr>
+            <td>${E1.toFixed(1)}</td><td>${E2.toFixed(1)}</td>
+            <td>${R1.toFixed(0)}</td><td>${R2.toFixed(0)}</td><td>${R3.toFixed(0)}</td>
+            <td>${(I1*1000).toFixed(1)}</td><td>${(I2*1000).toFixed(1)}</td><td>${(I3*1000).toFixed(1)}</td>
+        </tr>`;
+    }
+    
+    E1_slider.addEventListener('input', calculateAll);
+    E2_slider.addEventListener('input', calculateAll);
+    R1_slider.addEventListener('input', calculateAll);
+    R2_slider.addEventListener('input', calculateAll);
+    R3_slider.addEventListener('input', calculateAll);
+    resetBtn.addEventListener('click', () => {
+        E1_slider.value = "15"; E2_slider.value = "10";
+        R1_slider.value = "100"; R2_slider.value = "150"; R3_slider.value = "200";
+        calculateAll();
+    });
+    calculateAll();
+    
+    // Модальное окно
+    const modal = document.getElementById('tasksModal');
+    const openBtn = document.getElementById('openTasksBtn');
+    const closeSpan = document.querySelector('.close-modal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    openBtn.addEventListener('click', () => modal.style.display = 'block');
+    closeSpan.addEventListener('click', () => modal.style.display = 'none');
+    closeModalBtn.addEventListener('click', () => modal.style.display = 'none');
+    window.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+    
+    function saveTasks() {
+        const data = {
+            task1_I1: document.getElementById('task1_I1').value, task1_I2: document.getElementById('task1_I2').value, task1_I3: document.getElementById('task1_I3').value, task1_done: document.getElementById('task1_done').checked,
+            task2_I1: document.getElementById('task2_I1').value, task2_I2: document.getElementById('task2_I2').value, task2_I3: document.getElementById('task2_I3').value, task2_done: document.getElementById('task2_done').checked,
+            task3_E1: document.getElementById('task3_E1').value, task3_E2: document.getElementById('task3_E2').value, task3_R1: document.getElementById('task3_R1').value, task3_R2: document.getElementById('task3_R2').value, task3_R3: document.getElementById('task3_R3').value, task3_done: document.getElementById('task3_done').checked,
+            task4_kcl: document.getElementById('task4_kcl').value, task4_kvl: document.getElementById('task4_kvl').value, task4_done: document.getElementById('task4_done').checked
+        };
+        localStorage.setItem('labTasks_2SP1', JSON.stringify(data));
+        alert('✅ Ответы сохранены!');
+    }
+    function loadTasks() {
+        const saved = localStorage.getItem('labTasks_2SP1');
+        if(saved){
+            const d = JSON.parse(saved);
+            document.getElementById('task1_I1').value = d.task1_I1 || ''; document.getElementById('task1_I2').value = d.task1_I2 || ''; document.getElementById('task1_I3').value = d.task1_I3 || ''; document.getElementById('task1_done').checked = d.task1_done || false;
+            document.getElementById('task2_I1').value = d.task2_I1 || ''; document.getElementById('task2_I2').value = d.task2_I2 || ''; document.getElementById('task2_I3').value = d.task2_I3 || ''; document.getElementById('task2_done').checked = d.task2_done || false;
+            document.getElementById('task3_E1').value = d.task3_E1 || ''; document.getElementById('task3_E2').value = d.task3_E2 || ''; document.getElementById('task3_R1').value = d.task3_R1 || ''; document.getElementById('task3_R2').value = d.task3_R2 || ''; document.getElementById('task3_R3').value = d.task3_R3 || ''; document.getElementById('task3_done').checked = d.task3_done || false;
+            document.getElementById('task4_kcl').value = d.task4_kcl || ''; document.getElementById('task4_kvl').value = d.task4_kvl || ''; document.getElementById('task4_done').checked = d.task4_done || false;
+        }
+    }
+    function copyAnswers() {
+        let text = "📋 ОТЧЁТ ПО ЛАБОРАТОРНОЙ РАБОТЕ (группа 2СП1, линейная сложная схема)\n\n";
+        text += "Задание 1 (E1=20 В): I₁="+document.getElementById('task1_I1').value+" мА, I₂="+document.getElementById('task1_I2').value+" мА, I₃="+document.getElementById('task1_I3').value+" мА\n";
+        text += "Задание 2 (R2=250 Ом): I₁="+document.getElementById('task2_I1').value+" мА, I₂="+document.getElementById('task2_I2').value+" мА, I₃="+document.getElementById('task2_I3').value+" мА\n";
+        text += "Задание 3 (I₂=0): E₁="+document.getElementById('task3_E1').value+", E₂="+document.getElementById('task3_E2').value+", R₁="+document.getElementById('task3_R1').value+", R₂="+document.getElementById('task3_R2').value+", R₃="+document.getElementById('task3_R3').value+"\n";
+        text += "Задание 4: невязка по 1-му закону = "+document.getElementById('task4_kcl').value+" мА, по 2-му закону = "+document.getElementById('task4_kvl').value+" В\n";
+        navigator.clipboard.writeText(text).then(() => alert('Данные скопированы! Вставьте в отчёт.'));
+    }
+    document.getElementById('saveAnswersBtn').addEventListener('click', saveTasks);
+    document.getElementById('copyAnswersBtn').addEventListener('click', copyAnswers);
+    loadTasks();
+</script>
+</body>
+</html>
