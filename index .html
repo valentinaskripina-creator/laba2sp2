@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Виртуальная лаборатория: Цепь переменного тока с активным сопротивлением (самостоятельное построение диаграмм)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #eef2f5;
+            margin: 0;
+            padding: 24px 20px;
+            color: #0a2b3e;
+        }
+        .lab-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.15);
+            overflow: hidden;
+            padding: 20px 28px 32px 28px;
+        }
+        h1 {
+            font-size: 1.9rem;
+            margin: 0 0 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 0.8rem;
+            background: #e9eff7;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-weight: normal;
+        }
+        .badge-lab {
+            background: #1e4a76;
+            color: white;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .subhead {
+            border-left: 5px solid #3b82f6;
+            padding-left: 18px;
+            margin: 12px 0 24px 0;
+            color: #1e3a5f;
+            font-weight: 500;
+        }
+        .flex-main {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+            margin-bottom: 30px;
+        }
+        .sim-panel {
+            flex: 1.2;
+            min-width: 300px;
+            background: #f9fafc;
+            border-radius: 28px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .instructions-panel {
+            flex: 1;
+            min-width: 280px;
+            background: #fefce8;
+            border-radius: 28px;
+            padding: 20px;
+            border: 1px solid #fde047;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .param {
+            margin-bottom: 22px;
+        }
+        .param label {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: #2563eb;
+        }
+        .param-value {
+            background: #e2e8f0;
+            padding: 4px 12px;
+            border-radius: 24px;
+            font-family: monospace;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 20px 0 10px;
+        }
+        .metric-card {
+            background: white;
+            border-radius: 20px;
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .metric-card span:first-child {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #2c5a7a;
+        }
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .graph-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin: 20px 0 28px;
+        }
+        .graph-card {
+            flex: 1;
+            min-width: 280px;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 14px;
+            border: 1px solid #e2edf7;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        canvas {
+            max-height: 250px;
+            width: 100%;
+        }
+        .vector-task-card {
+            background: #fff0db;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border-left: 6px solid #f97316;
+        }
+        .task-draw {
+            background: #fff7e5;
+            border-radius: 1rem;
+            padding: 16px;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            border-left: 4px solid #f59e0b;
+            width: 100%;
+        }
+        .control-questions {
+            margin-top: 20px;
+            background: #eef2ff;
+            border-radius: 1.5rem;
+            padding: 16px 20px;
+        }
+        .control-questions h4, .instructions-panel h4 {
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .step-list {
+            padding-left: 1.3rem;
+            margin: 12px 0;
+        }
+        .step-list li {
+            margin: 8px 0;
+        }
+        .journal-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 15px 0;
+            font-size: 0.85rem;
+        }
+        .journal-table th, .journal-table td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 6px;
+            text-align: center;
+        }
+        .journal-table th {
+            background: #d9e6f5;
+        }
+        .formula-inline {
+            background: #e9ecef;
+            font-family: monospace;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+        footer {
+            text-align: center;
+            margin-top: 28px;
+            font-size: 0.7rem;
+            color: #5d6f83;
+            border-top: 1px solid #dce5ef;
+            padding-top: 18px;
+        }
+        .manual-diagram-placeholder {
+            background: #fef3c7;
+            border-radius: 24px;
+            padding: 20px;
+            text-align: center;
+            border: 2px dashed #f59e0b;
+            margin-top: 12px;
+        }
+        .placeholder-text {
+            font-weight: bold;
+            color: #b45309;
+        }
+        @media (max-width: 750px) {
+            .lab-container { padding: 16px; }
+            .metric-value { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="lab-container">
+    <h1>⚡ Лабораторная работа: <span style="font-weight:500;">цепь переменного тока с активным сопротивлением</span>
+        <small>R-цепь ~ тока</small>
+    </h1>
+    <div class="subhead">
+        📐 Изучение закона Ома, фазовых соотношений, активной мощности. <strong>Векторные диаграммы строятся самостоятельно в тетради</strong> (без подсказок).
+    </div>
+
+    <div class="flex-main">
+        <!-- СИМУЛЯЦИЯ + РАСЧЁТЫ -->
+        <div class="sim-panel">
+            <div style="font-weight: 700; font-size: 1.2rem; margin-bottom: 12px;">🎛️ Управление экспериментом</div>
+            <div class="param">
+                <label>Активное сопротивление \(R\) <span id="R_val" class="param-value">100</span> Ом</label>
+                <input type="range" id="R_slider" min="10" max="500" step="1" value="100">
+            </div>
+            <div class="param">
+                <label>Амплитуда напряжения \(U_m\) <span id="Um_val" class="param-value">170</span> В</label>
+                <input type="range" id="Um_slider" min="20" max="400" step="2" value="170">
+            </div>
+            <div class="param">
+                <label>Частота \(f\) <span id="f_val" class="param-value">50</span> Гц</label>
+                <input type="range" id="f_slider" min="20" max="200" step="1" value="50">
+            </div>
+            <div class="metrics">
+                <div class="metric-card"><span>Действ. напряжение U</span><div class="metric-value" id="U_rms">120.6 В</div></div>
+                <div class="metric-card"><span>Действ. ток I</span><div class="metric-value" id="I_rms">1.206 А</div></div>
+                <div class="metric-card"><span>Амплитуда тока Iₘ</span><div class="metric-value" id="Im_peak">1.706 А</div></div>
+                <div class="metric-card"><span>Активная мощность P</span><div class="metric-value" id="active_power">145.5 Вт</div></div>
+            </div>
+            <div class="formula-inline" style="text-align:center; display:block;">P = U·I = I²·R = U²/R</div>
+            <div style="margin-top: 12px; background:#e6f0fa; border-radius: 28px; padding: 8px 12px; font-size:0.75rem; text-align:center;">
+                ⚡ Закон Ома в действующих значениях: \(I = U / R\)  (совпадает с цепью постоянного тока)
+            </div>
+        </div>
+
+        <!-- ИНСТРУКЦИЯ + ЗАПИСЬ В ТЕТРАДЬ + ЗАДАНИЕ НА ПОСТРОЕНИЕ (без готовой диаграммы) -->
+        <div class="instructions-panel">
+            <h4>📘 Инструкция: что записать в тетрадь</h4>
+            <p><strong>Цель работы:</strong> экспериментально проверить закон Ома для цепи переменного тока с активным сопротивлением, определить фазовый сдвиг, рассчитать активную мощность, научиться строить векторные диаграммы.</p>
+            <p><strong>Оборудование:</strong> Виртуальная лаборатория (регулировка R, U<sub>m</sub>, f).</p>
+            <p><strong>Ход выполнения (шаги):</strong></p>
+            <ol class="step-list" style="margin:0 0 10px 0;">
+                <li><strong>Базовый режим:</strong> установите R = 100 Ом, U<sub>m</sub> = 170 В, f = 50 Гц. Запишите в таблицу все измеренные/рассчитанные значения: U<sub>m</sub>, U (действ.), I<sub>m</sub>, I, P.</li>
+                <li><strong>Режим 2 (изменение R):</strong> увеличьте сопротивление до R = 200 Ом, оставив U<sub>m</sub> = 170 В. Запишите новые I<sub>m</sub>, I, P. Сравните с законом Ома.</li>
+                <li><strong>Режим 3 (изменение U<sub>m</sub>):</strong> верните R = 100 Ом, установите U<sub>m</sub> = 300 В, f = 50 Гц. Запишите значения тока и мощности.</li>
+                <li><strong>Анализ фаз:</strong> по графикам u(t) и i(t) определите, совпадают ли максимумы. Сделайте вывод о фазовом сдвиге (запишите φ = 0°).</li>
+                <li><strong>Самостоятельное построение векторных диаграмм (в тетради):</strong><br>
+                    • Для <strong>базового режима</strong> (U<sub>m</sub>=170 В, I<sub>m</sub>=1.7 А) выберите масштаб: например, 1 см = 30 В для напряжения и 1 см = 0,3 А для тока. Постройте векторы U<sub>m</sub> и I<sub>m</sub>, отложив их вдоль одной оси (угол 0°).<br>
+                    • Для <strong>режима 2</strong> (U<sub>m</sub>=170 В, I<sub>m</sub> = 0.85 А) постройте вторую диаграмму в другом масштабе или на том же поле, но с пояснением. Убедитесь, что векторы остаются синфазными, но длина вектора тока изменится.<br>
+                    • Подпишите на диаграммах амплитудные значения, обозначьте угол φ = 0°.
+                </li>
+                <li><strong>Вывод:</strong> на основании полученных данных сформулируйте, как зависит ток от сопротивления и напряжения, подтверждается ли закон Ома, какой характер мощности (активная, всегда положительная).</li>
+            </ol>
+            <table class="journal-table">
+                <thead>
+                <tr><th>Режим</th><th>U<sub>m</sub>, В</th><th>R, Ом</th><th>I<sub>m</sub>, А</th><th>U, В (д)</th><th>I, А (д)</th><th>P, Вт</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>1 (базовый)</td><td id="tab_Um1">170</td><td id="tab_R1">100</td><td id="tab_Im1">1.70</td><td id="tab_U1">120.2</td><td id="tab_I1">1.202</td><td id="tab_P1">144.5</td></tr>
+                    <tr><td>2 (R=200 Ом)</td><td id="tab_Um2">170</td><td id="tab_R2">200</td><td id="tab_Im2">—</td><td id="tab_U2">120.2</td><td id="tab_I2">—</td><td id="tab_P2">—</td></tr>
+                    <tr><td>3 (U<sub>m</sub>=300 В)</td><td id="tab_Um3">300</td><td id="tab_R3">100</td><td id="tab_Im3">—</td><td id="tab_U3">212.1</td><td id="tab_I3">—</td><td id="tab_P3">—</td></tr>
+                </tbody>
+            </table>
+            <p><em>📝 Примечание: таблица отображает текущие рассчитанные значения. <strong>Перепишите их в тетрадь</strong> для каждого режима (при изменении ползунков значения обновляются).</em></p>
+            <div class="task-draw">
+                ✏️ <strong>Задание на построение векторной диаграммы (строго в тетради, без готового образца):</strong><br>
+                • Возьмите миллиметровую бумагу или лист в клетку.<br>
+                • Для базового режима: U<sub>m</sub> = <span id="draw_Um">170</span> В, I<sub>m</sub> = <span id="draw_Im">1.70</span> А.<br>
+                • Выберите удобный масштаб (например, 1 см = 20 В; 1 см = 0,2 А). Постройте горизонтальные векторы напряжения и тока (φ=0°).<br>
+                • Для режима 2 (R=200 Ом, U<sub>m</sub>=170В) постройте отдельную диаграмму, сохраняя тот же масштаб для напряжения, но ток будет меньше — покажите это.<br>
+                • Подпишите длины в сантиметрах и соответствующие амплитуды. Отметьте угол сдвига.
+            </div>
+        </div>
+    </div>
+
+    <!-- ГРАФИКИ (только временные зависимости, векторной диаграммы НЕТ) -->
+    <div class="graph-grid">
+        <div class="graph-card">
+            <h3 style="margin:0 0 6px 0;">📈 Графики u(t) и i(t)</h3>
+            <canvas id="voltageCurrentChart" width="500" height="220" style="width:100%; height:auto;"></canvas>
+            <div style="font-size:0.7rem; text-align:center;">Синфазность: максимумы совпадают → φ = 0° (запишите в вывод)</div>
+        </div>
+        <div class="graph-card">
+            <h3 style="margin:0 0 6px 0;">🔥 Мгновенная мощность p(t)</h3>
+            <canvas id="powerChart" width="500" height="220" style="width:100%; height:auto;"></canvas>
+            <div style="font-size:0.7rem; text-align:center;">\(p(t)=UI - UI\cos(2\omega t)\) &nbsp;→ всегда ≥ 0 (энергия потребляется)</div>
+        </div>
+        <div class="graph-card vector-task-card">
+            <h3 style="margin:0 0 6px 0;">📐 Построение векторной диаграммы</h3>
+            <div class="manual-diagram-placeholder">
+                <div class="placeholder-text">✍️ САМОСТОЯТЕЛЬНАЯ РАБОТА</div>
+                <p style="margin:8px 0;">Векторная диаграмма <strong>отсутствует</strong> на экране. Выполните построение в тетради по инструкции слева.</p>
+                <div style="background:#fff2df; border-radius: 16px; padding: 8px; font-size:0.8rem;">
+                    📐 Для базового режима: U<sub>m</sub> = <span id="draw_Um2">170</span> В, I<sub>m</sub> = <span id="draw_Im2">1.70</span> А.<br>
+                    Масштаб выберите самостоятельно. Направление векторов — горизонтальное (φ=0°).
+                </div>
+            </div>
+            <p style="font-size:0.7rem; margin-top: 10px;">✅ Не забудьте подписать векторы, указать масштаб и угол. Контрольные вопросы проверят понимание.</p>
+        </div>
+    </div>
+
+    <!-- КОНТРОЛЬНЫЕ ВОПРОСЫ (с усложнёнными заданиями) -->
+    <div class="control-questions">
+        <h4>❓ Контрольные вопросы (письменно ответьте в тетради)</h4>
+        <ol style="margin-bottom: 0;">
+            <li>Запишите закон Ома для цепи переменного тока с активным сопротивлением в действующих и амплитудных значениях.</li>
+            <li>Чему равен фазовый сдвиг между напряжением и током в цепи с идеальным резистором? Обоснуйте, используя формулу \(i = u/R\).</li>
+            <li>Выведите формулу мгновенной мощности \(p(t)\) для резистивной цепи и объясните, почему средняя мощность равна \(UI\).</li>
+            <li>Как изменится активная мощность, если увеличить напряжение в 2 раза, а сопротивление оставить неизменным? Проверьте на симуляторе и запишите вывод.</li>
+            <li>Нарисуйте в тетради векторную диаграмму для режима, когда R = 50 Ом, U<sub>m</sub> = 100 В. Чему равен I<sub>m</sub>? Как направлены векторы?</li>
+            <li>Почему график мгновенной мощности имеет частоту 2ω (вдвое больше частоты тока)? Что физически означает отсутствие отрицательных значений мощности?</li>
+            <li>Если в цепи активное сопротивление 100 Ом, амплитуда напряжения 200 В, определите: а) действующее напряжение; б) амплитуду тока; в) активную мощность. Сравните с показаниями лаборатории.</li>
+            <li>Можно ли использовать формулы постоянного тока для расчёта действующих значений в цепи переменного тока с активным сопротивлением? Почему?</li>
+        </ol>
+        <p style="margin-top: 12px; font-style:italic; font-size:0.85rem;">💡 Совет: изменяйте параметры в виртуальной лаборатории, сверяйте расчёты, а затем стройте диаграммы от руки — это закрепляет понимание.</p>
+    </div>
+    <footer>
+        🧪 Виртуальная лаборатория по электротехнике. Активное сопротивление — необратимое преобразование энергии.  
+        <strong>Векторные диаграммы строятся строго в тетради, без экранной подсказки.</strong>
+    </footer>
+</div>
+
+<script>
+    // Элементы управления
+    const R_slider = document.getElementById('R_slider');
+    const Um_slider = document.getElementById('Um_slider');
+    const f_slider = document.getElementById('f_slider');
+    const R_val = document.getElementById('R_val');
+    const Um_val = document.getElementById('Um_val');
+    const f_val = document.getElementById('f_val');
+    const U_rms_span = document.getElementById('U_rms');
+    const I_rms_span = document.getElementById('I_rms');
+    const Im_peak_span = document.getElementById('Im_peak');
+    const active_power_span = document.getElementById('active_power');
+
+    // элементы таблицы
+    const tab_Um1 = document.getElementById('tab_Um1');
+    const tab_R1 = document.getElementById('tab_R1');
+    const tab_Im1 = document.getElementById('tab_Im1');
+    const tab_U1 = document.getElementById('tab_U1');
+    const tab_I1 = document.getElementById('tab_I1');
+    const tab_P1 = document.getElementById('tab_P1');
+    const tab_Um2 = document.getElementById('tab_Um2');
+    const tab_R2 = document.getElementById('tab_R2');
+    const tab_Im2 = document.getElementById('tab_Im2');
+    const tab_U2 = document.getElementById('tab_U2');
+    const tab_I2 = document.getElementById('tab_I2');
+    const tab_P2 = document.getElementById('tab_P2');
+    const tab_Um3 = document.getElementById('tab_Um3');
+    const tab_R3 = document.getElementById('tab_R3');
+    const tab_Im3 = document.getElementById('tab_Im3');
+    const tab_U3 = document.getElementById('tab_U3');
+    const tab_I3 = document.getElementById('tab_I3');
+    const tab_P3 = document.getElementById('tab_P3');
+    
+    // элементы для отображения текущих амплитуд в задании на построение
+    const draw_Um = document.getElementById('draw_Um');
+    const draw_Im = document.getElementById('draw_Im');
+    const draw_Um2 = document.getElementById('draw_Um2');
+    const draw_Im2 = document.getElementById('draw_Im2');
+
+    let R = 100, Um = 170, f = 50;
+    let omega = 2 * Math.PI * f;
+    let Im = Um / R;
+    let U_rms = Um / Math.sqrt(2);
+    let I_rms = Im / Math.sqrt(2);
+    let P_active = U_rms * I_rms;
+
+    let voltageCurrentChart, powerChart;
+
+    function updateAll() {
+        R = parseFloat(R_slider.value);
+        Um = parseFloat(Um_slider.value);
+        f = parseFloat(f_slider.value);
+        R_val.innerText = R;
+        Um_val.innerText = Um;
+        f_val.innerText = f;
+        omega = 2 * Math.PI * f;
+        Im = Um / R;
+        U_rms = Um / Math.sqrt(2);
+        I_rms = Im / Math.sqrt(2);
+        P_active = U_rms * I_rms;
+
+        U_rms_span.innerHTML = U_rms.toFixed(2) + ' В';
+        I_rms_span.innerHTML = I_rms.toFixed(3) + ' А';
+        Im_peak_span.innerHTML = Im.toFixed(3) + ' А';
+        active_power_span.innerHTML = P_active.toFixed(2) + ' Вт';
+
+        // Обновление таблицы: режим 1 (текущий)
+        tab_Um1.innerText = Um.toFixed(0);
+        tab_R1.innerText = R;
+        tab_Im1.innerText = Im.toFixed(3);
+        tab_U1.innerText = U_rms.toFixed(2);
+        tab_I1.innerText = I_rms.toFixed(3);
+        tab_P1.innerText = P_active.toFixed(2);
+
+        // Режим 2: R=200, Um=170
+        let Um2_fixed = 170;
+        let R2_fixed = 200;
+        let Im2 = Um2_fixed / R2_fixed;
+        let U_rms2 = Um2_fixed / Math.sqrt(2);
+        let I_rms2 = Im2 / Math.sqrt(2);
+        let P2 = U_rms2 * I_rms2;
+        tab_Um2.innerText = Um2_fixed;
+        tab_R2.innerText = R2_fixed;
+        tab_Im2.innerText = Im2.toFixed(3);
+        tab_U2.innerText = U_rms2.toFixed(2);
+        tab_I2.innerText = I_rms2.toFixed(3);
+        tab_P2.innerText = P2.toFixed(2);
+
+        // Режим 3: Um=300, R=100
+        let Um3_fixed = 300;
+        let R3_fixed = 100;
+        let Im3 = Um3_fixed / R3_fixed;
+        let U_rms3 = Um3_fixed / Math.sqrt(2);
+        let I_rms3 = Im3 / Math.sqrt(2);
+        let P3 = U_rms3 * I_rms3;
+        tab_Um3.innerText = Um3_fixed;
+        tab_R3.innerText = R3_fixed;
+        tab_Im3.innerText = Im3.toFixed(3);
+        tab_U3.innerText = U_rms3.toFixed(2);
+        tab_I3.innerText = I_rms3.toFixed(3);
+        tab_P3.innerText = P3.toFixed(2);
+
+        // Обновляем значения для задания в тетради (базовый режим)
+        draw_Um.innerText = Um.toFixed(0);
+        draw_Im.innerText = Im.toFixed(3);
+        draw_Um2.innerText = Um.toFixed(0);
+        draw_Im2.innerText = Im.toFixed(3);
+        
+        updateGraphs();
+    }
+
+    function generateSignals() {
+        const T = 1 / f;
+        const points = 500;
+        const dt = T / (points - 1);
+        let t_vals = [], u_vals = [], i_vals = [], p_vals = [];
+        for (let k = 0; k < points; k++) {
+            let t = k * dt;
+            let wt = omega * t;
+            let u = Um * Math.sin(wt);
+            let i_val = Im * Math.sin(wt);
+            let p_inst = u * i_val;
+            t_vals.push(t);
+            u_vals.push(u);
+            i_vals.push(i_val);
+            p_vals.push(p_inst);
+        }
+        return { t_vals, u_vals, i_vals, p_vals, T };
+    }
+
+    function updateGraphs() {
+        const { t_vals, u_vals, i_vals, p_vals, T } = generateSignals();
+        if (voltageCurrentChart) {
+            voltageCurrentChart.data.datasets[0].data = u_vals;
+            voltageCurrentChart.data.datasets[1].data = i_vals;
+            voltageCurrentChart.options.scales.x.max = T;
+            let maxI = Math.abs(Im * 1.1);
+            voltageCurrentChart.options.scales.y1.max = maxI;
+            voltageCurrentChart.options.scales.y1.min = -maxI;
+            voltageCurrentChart.update();
+        } else {
+            const ctx = document.getElementById('voltageCurrentChart').getContext('2d');
+            voltageCurrentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: t_vals,
+                    datasets: [
+                        { label: 'u(t), В', data: u_vals, borderColor: '#dc2626', borderWidth: 2, tension: 0.2, pointRadius: 0, yAxisID: 'y' },
+                        { label: 'i(t), А', data: i_vals, borderColor: '#2563eb', borderWidth: 2, tension: 0.2, pointRadius: 0, yAxisID: 'y1' }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        x: { title: { display: true, text: 'Время (с)' }, max: T },
+                        y: { title: { display: true, text: 'U (В)', color: '#dc2626' } },
+                        y1: { title: { display: true, text: 'I (А)', color: '#2563eb' }, position: 'right', grid: { drawOnChartArea: false } }
+                    }
+                }
+            });
+        }
+        if (powerChart) {
+            powerChart.data.datasets[0].data = p_vals;
+            powerChart.options.scales.x.max = T;
+            let maxP = Math.max(...p_vals, 0.1);
+            powerChart.options.scales.y.max = maxP * 1.05;
+            powerChart.options.scales.y.min = -maxP * 0.02;
+            powerChart.update();
+        } else {
+            const ctxP = document.getElementById('powerChart').getContext('2d');
+            let maxP = Math.max(...p_vals, 0.1);
+            powerChart = new Chart(ctxP, {
+                type: 'line',
+                data: { labels: t_vals, datasets: [{ label: 'p(t), Вт', data: p_vals, borderColor: '#16a34a', backgroundColor: '#e0f2e9', fill: true, borderWidth: 2, tension: 0.2, pointRadius: 0 }] },
+                options: {
+                    responsive: true,
+                    scales: { x: { title: { display: true, text: 'Время (с)' }, max: T }, y: { title: { display: true, text: 'Вт' }, min: -maxP*0.02, max: maxP*1.05 } }
+                }
+            });
+        }
+    }
+
+    R_slider.addEventListener('input', () => updateAll());
+    Um_slider.addEventListener('input', () => updateAll());
+    f_slider.addEventListener('input', () => updateAll());
+    
+    updateAll();
+    window.addEventListener('resize', () => {
+        if (voltageCurrentChart) voltageCurrentChart.resize();
+        if (powerChart) powerChart.resize();
+    });
+</script>
+</body>
+</html>
